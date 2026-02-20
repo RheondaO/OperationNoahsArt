@@ -8,217 +8,183 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
-        
         body { font-family: 'Inter', sans-serif; background-color: #f5f5f4; color: #1c1917; }
         h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
-        .chart-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; height: 300px; }
-        .ai-glow { position: relative; }
-        .ai-glow::after { content: ''; position: absolute; inset: -2px; background: linear-gradient(45deg, #d6d3d1, #a8a29e); z-index: -1; border-radius: inherit; opacity: 0.3; filter: blur(8px); }
-        .tab-active { border-bottom: 2px solid #1c1917; color: #1c1917; font-weight: 700; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; height: 250px; }
+        #main-interface { display: none; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .loading-shimmer { background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        
-        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        #main-interface { display: none; }
     </style>
 </head>
-<body class="antialiased min-h-screen flex flex-col">
+<body class="antialiased min-h-screen">
 
     <!-- Passcode Overlay -->
     <div id="auth-overlay" class="fixed inset-0 z-[100] bg-stone-100 flex items-center justify-center p-6">
         <div class="max-w-md w-full text-center space-y-8 fade-in">
             <h1 class="text-4xl serif italic text-stone-900 tracking-tighter">𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘</h1>
             <div class="bg-white p-8 rounded-3xl shadow-xl border border-stone-200">
-                <p class="text-xs uppercase tracking-widest font-bold text-stone-400 mb-6">Encrypted Access Required</p>
-                <input type="password" id="passcode-input" placeholder="Enter System Passcode" 
-                    class="w-full p-4 text-center text-xl tracking-[0.5em] bg-stone-50 border border-stone-200 rounded-2xl focus:ring-2 focus:ring-stone-900 focus:outline-none mb-4">
+                <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 mb-6">Encrypted Access Required</p>
+                <input type="password" id="passcode-input" placeholder="••••" 
+                    class="w-full p-4 text-center text-2xl tracking-[0.5em] bg-stone-50 border border-stone-200 rounded-2xl focus:ring-2 focus:ring-stone-900 focus:outline-none mb-4">
                 <button onclick="verifyPasscode()" class="w-full bg-stone-900 text-white py-4 rounded-2xl font-bold hover:bg-stone-800 transition-all shadow-lg">Authenticate</button>
-                <p id="auth-error" class="text-red-500 text-xs mt-4 hidden">Invalid passcode. Access denied.</p>
+                <p id="auth-error" class="text-red-500 text-xs mt-4 hidden">Invalid passcode.</p>
             </div>
         </div>
     </div>
 
-    <!-- Main Dashboard UI -->
+    <!-- Main Dashboard -->
     <div id="main-interface">
         <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-            <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-                <h1 class="text-2xl font-bold tracking-tight">𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘 <span class="text-stone-400 font-light text-sm sans-serif ml-2 tracking-widest uppercase text-[10px]">Dashboard</span></h1>
-                <div class="flex items-center space-x-6">
-                    <nav class="hidden md:flex space-x-6 text-[10px] uppercase tracking-widest font-bold text-stone-500">
-                        <a href="#ai-studio" class="hover:text-stone-900">Studio</a>
-                        <a href="#monetization" class="hover:text-stone-900">Revenue</a>
-                        <a href="#roadmap" class="hover:text-stone-900">Roadmap</a>
-                    </nav>
-                    <div class="relative group">
-                        <button class="p-2 hover:bg-stone-100 rounded-full transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-600"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                        </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl shadow-xl hidden group-hover:block py-2 z-[60]">
-                            <button onclick="updateKey()" class="w-full text-left px-4 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50">Update API Key</button>
-                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Lock System</button>
-                        </div>
-                    </div>
+            <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+                <h1 class="text-xl font-bold tracking-tight uppercase">𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘</h1>
+                <div class="flex items-center space-x-4">
+                    <button onclick="updateKey()" class="text-[10px] font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900">Update API Key</button>
+                    <button onclick="logout()" class="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-700">Lock</button>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-6xl mx-auto px-4 py-8 w-full space-y-12">
-            <!-- AI Strategy Studio -->
-            <section id="ai-studio" class="scroll-mt-24 space-y-8">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <!-- AI Content Architect -->
-                    <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm ai-glow">
-                        <h4 class="font-bold text-stone-800 mb-4">✨ Content Architect</h4>
-                        <textarea id="ai-prompt" placeholder="Input a theme..." class="w-full h-24 p-4 text-sm bg-stone-50 border-none rounded-xl focus:ring-1 focus:ring-stone-400 mb-4"></textarea>
-                        <button onclick="generateThread()" id="btn-generate" class="w-full bg-stone-900 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-all">Generate Strategy Swipe 🧵</button>
-                        <div id="ai-output" class="hidden mt-6 space-y-4 text-sm text-stone-600 border-t border-stone-100 pt-4"></div>
-                    </div>
+        <main class="max-w-6xl mx-auto px-6 py-10 space-y-12">
+            <!-- AI Suite -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Content Architect -->
+                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                    <h3 class="font-bold text-stone-800 mb-4 flex items-center gap-2">✨ Content Architect</h3>
+                    <textarea id="ai-prompt" placeholder="Describe the vibe..." class="w-full h-32 p-4 text-sm bg-stone-50 border border-stone-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-stone-300 mb-4"></textarea>
+                    <button onclick="generateAction('architect')" class="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-bold hover:bg-stone-800 transition-all">Generate Strategy</button>
+                    <div id="out-architect" class="hidden mt-6 p-4 bg-stone-50 rounded-xl text-sm text-stone-600 border border-stone-100 italic whitespace-pre-wrap"></div>
+                </div>
 
-                    <!-- AI Reply Optimizer -->
-                    <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                        <h4 class="font-bold text-stone-800 mb-4">✨ Reply Optimizer</h4>
-                        <textarea id="ai-reply-context" placeholder="Paste post here..." class="w-full h-24 p-3 text-sm border border-stone-200 rounded-lg focus:ring-1 focus:ring-stone-400 mb-4 bg-stone-50"></textarea>
-                        <button onclick="generateReply()" id="btn-reply" class="w-full border border-stone-900 text-stone-900 py-3 rounded-xl font-bold hover:bg-stone-50 transition-all">Draft High-Value Reply 💬</button>
-                        <div id="ai-reply-output" class="hidden mt-6 p-4 bg-stone-50 rounded-lg border border-stone-200 italic text-sm text-stone-700"></div>
-                    </div>
+                <!-- Reply Optimizer -->
+                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                    <h3 class="font-bold text-stone-800 mb-4">✨ Reply Optimizer</h3>
+                    <textarea id="ai-reply" placeholder="Post content to reply to..." class="w-full h-32 p-4 text-sm bg-stone-50 border border-stone-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-stone-300 mb-4"></textarea>
+                    <button onclick="generateAction('reply')" class="w-full border border-stone-900 text-stone-900 py-3 rounded-xl text-sm font-bold hover:bg-stone-50 transition-all">Draft High-Value Reply</button>
+                    <div id="out-reply" class="hidden mt-6 p-4 bg-stone-50 rounded-xl text-sm text-stone-600 border border-stone-100 italic"></div>
+                </div>
 
-                    <!-- AI Revenue Simulator -->
-                    <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                        <h4 class="font-bold text-stone-800 mb-4">✨ Revenue Simulator</h4>
-                        <div class="space-y-4 text-sm">
-                            <input type="number" id="sim-followers" value="1200" placeholder="Followers" class="w-full p-2 bg-stone-50 border border-stone-100 rounded">
-                            <select id="sim-product" class="w-full p-2 bg-stone-50 border border-stone-100 rounded">
-                                <option value="lookbook">Digital Product ($25)</option>
-                                <option value="subscription">Subscriptions ($5/mo)</option>
-                            </select>
-                            <button onclick="simulateRevenue()" id="btn-sim" class="w-full border border-stone-900 py-3 rounded-xl font-bold hover:bg-stone-50">Predict Monthly ROI ✨</button>
-                            <div id="sim-output" class="text-xs text-stone-500 italic mt-2"></div>
-                        </div>
+                <!-- Revenue Simulator -->
+                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                    <h3 class="font-bold text-stone-800 mb-4">✨ ROI Simulator</h3>
+                    <div class="space-y-4">
+                        <input type="number" id="sim-followers" value="1000" class="w-full p-3 bg-stone-50 border border-stone-100 rounded-lg text-sm">
+                        <select id="sim-type" class="w-full p-3 bg-stone-50 border border-stone-100 rounded-lg text-sm">
+                            <option value="digital product">Digital Product ($25)</option>
+                            <option value="newsletter">Newsletter ($5/mo)</option>
+                        </select>
+                        <button onclick="generateAction('sim')" class="w-full border border-stone-900 py-3 rounded-xl text-sm font-bold">Predict Revenue</button>
+                        <div id="out-sim" class="hidden mt-4 text-xs text-stone-500 font-mono"></div>
                     </div>
                 </div>
-            </section>
+            </div>
 
-            <!-- Metrics -->
+            <!-- Dashboard Analytics -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <section class="bg-white p-6 rounded-2xl border border-stone-200">
-                    <h3 class="text-xl serif mb-4">Algorithm Weight Tracker</h3>
+                <div class="bg-white p-8 rounded-2xl border border-stone-200">
+                    <h3 class="text-xl serif mb-6">Algorithm Weighting</h3>
                     <div class="chart-container"><canvas id="algoChart"></canvas></div>
-                </section>
-                <div class="bg-stone-900 text-white p-8 rounded-2xl flex flex-col justify-center">
-                    <p class="text-stone-400 text-[10px] uppercase tracking-widest font-bold mb-2">Current Revenue Projection</p>
-                    <h2 id="current-rev-val" class="text-6xl serif mb-6">$0</h2>
-                    <div class="w-full bg-stone-800 rounded-full h-2 mb-2">
-                        <div id="rev-progress-bar" class="bg-white h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                </div>
+                <div class="bg-stone-900 text-white p-8 rounded-2xl flex flex-col justify-center text-center">
+                    <p class="text-stone-500 text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Revenue Milestone</p>
+                    <h2 id="rev-val" class="text-7xl serif mb-6">$0</h2>
+                    <div class="w-full bg-stone-800 rounded-full h-3 mb-4 overflow-hidden">
+                        <div id="rev-bar" class="bg-white h-full transition-all duration-1000" style="width: 0%"></div>
                     </div>
-                    <p class="text-[10px] text-stone-500 uppercase tracking-widest">Target: $1,000/mo</p>
+                    <p class="text-stone-400 text-xs">Progress toward $1,000 Monthly Passive Goal</p>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        const SYSTEM_PASSCODE = "2026"; 
-        // Use Gemini 1.5 Flash - it's stable and free for public keys
-        const MODEL_ID = "gemini-1.5-flash"; 
+        const SYSTEM_PASSCODE = "2026";
+        // Updated model ID to the most stable production name
+        const MODEL_NAME = "gemini-1.5-flash-latest"; 
 
-        // --- Auth Logic ---
         function verifyPasscode() {
-            const input = document.getElementById('passcode-input').value;
-            if (input === SYSTEM_PASSCODE) {
-                localStorage.setItem("AUTH_VERIFIED", "true");
-                initializeDashboard();
+            const val = document.getElementById('passcode-input').value;
+            if (val === SYSTEM_PASSCODE) {
+                localStorage.setItem("AUTH", "true");
+                showApp();
             } else {
                 document.getElementById('auth-error').classList.remove('hidden');
             }
         }
 
         async function getApiKey() {
-            let key = localStorage.getItem("GEMINI_API_KEY");
+            let key = localStorage.getItem("GEMINI_KEY");
             if (!key) {
-                key = window.prompt("Enter your Gemini API Key (get it from Google AI Studio):");
-                if (key) localStorage.setItem("GEMINI_API_KEY", key);
+                key = window.prompt("Enter your Google Gemini API Key:");
+                if (key) localStorage.setItem("GEMINI_KEY", key);
             }
             return key;
         }
 
         function updateKey() {
-            localStorage.removeItem("GEMINI_API_KEY");
+            localStorage.removeItem("GEMINI_KEY");
             getApiKey().then(() => location.reload());
         }
 
         function logout() {
-            localStorage.removeItem("AUTH_VERIFIED");
+            localStorage.removeItem("AUTH");
             location.reload();
         }
 
-        // --- API Call Core ---
-        async function callGemini(prompt, system) {
+        async function callGemini(promptText) {
             const key = await getApiKey();
-            if (!key) return "Error: No API Key provided.";
+            if (!key) return "Error: Missing API Key.";
 
-            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_ID}:generateContent?key=${key}`;
-            
+            // URL format for v1beta with specific model ID
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${key}`;
+
             try {
-                const response = await fetch(endpoint, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: `SYSTEM INSTRUCTION: ${system}\n\nUSER PROMPT: ${prompt}` }] }]
+                        contents: [{
+                            parts: [{ text: promptText }]
+                        }]
                     })
                 });
 
                 const data = await response.json();
-                
-                // Detailed error checking for GitHub debugging
+
                 if (data.error) {
-                    return `Error from Google: ${data.error.message}`;
+                    return `API Error: ${data.error.message}`;
                 }
 
-                const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                return resultText || "Error: API returned empty response.";
-
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
             } catch (err) {
-                console.error(err);
-                return "Error: Connection failed. Check your internet or API key.";
+                return `System Error: ${err.message}`;
             }
         }
 
-        // --- UI Actions ---
-        async function generateThread() {
-            const p = document.getElementById('ai-prompt').value;
-            const out = document.getElementById('ai-output');
-            if(!p) return;
-            out.classList.remove('hidden'); out.innerHTML = '<div class="loading-shimmer h-8 rounded"></div>';
-            const res = await callGemini(p, "Write a high-authority X thread hook.");
-            out.innerHTML = `<div class="p-4 bg-stone-50 rounded italic">${res}</div>`;
-        }
+        async function generateAction(type) {
+            const out = document.getElementById(`out-${type}`);
+            out.classList.remove('hidden');
+            out.innerHTML = '<div class="loading-shimmer h-4 w-full rounded"></div>';
+            
+            let prompt = "";
+            if (type === 'architect') prompt = `Act as a luxury brand strategist. Create a 3-part X thread strategy for: ${document.getElementById('ai-prompt').value}`;
+            if (type === 'reply') prompt = `Create a sophisticated, high-authority X reply for: ${document.getElementById('ai-reply').value}`;
+            if (type === 'sim') prompt = `Calculate monthly revenue for ${document.getElementById('sim-followers').value} followers using ${document.getElementById('sim-type').value}. Show calculation.`;
 
-        async function generateReply() {
-            const context = document.getElementById('ai-reply-context').value;
-            const output = document.getElementById('ai-reply-output');
-            if (!context) return;
-            output.classList.remove('hidden'); output.innerText = 'Analyzing...';
-            const res = await callGemini(context, "Write a sophisticated X reply.");
-            output.innerText = res;
-        }
-
-        async function simulateRevenue() {
-            const count = document.getElementById('sim-followers').value;
-            const type = document.getElementById('sim-product').value;
-            const out = document.getElementById('sim-output');
-            out.innerText = "Simulating...";
-            const res = await callGemini(`Project revenue for ${count} followers for ${type}.`, "Provide a single dollar amount and 1 sentence explanation.");
+            const res = await callGemini(prompt);
             out.innerText = res;
-            const match = res.match(/\$(\d+)/);
-            if(match) updateRevenueUI(parseInt(match[1]));
+
+            if (type === 'sim') {
+                const match = res.match(/\$(\d+)/);
+                if (match) updateRev(parseInt(match[1]));
+            }
         }
 
-        function updateRevenueUI(val) {
-            document.getElementById('current-rev-val').innerText = "$" + val;
-            const progress = Math.min((val / 1000) * 100, 100);
-            document.getElementById('rev-progress-bar').style.width = progress + "%";
+        function updateRev(val) {
+            document.getElementById('rev-val').innerText = `$${val}`;
+            const pct = Math.min((val / 1000) * 100, 100);
+            document.getElementById('rev-bar').style.width = pct + "%";
         }
 
         function initChart() {
@@ -227,24 +193,20 @@
                 type: 'bar',
                 data: {
                     labels: ['Reply', 'Bookmark', 'Repost'],
-                    datasets: [{
-                        data: [13.5, 10, 20],
-                        backgroundColor: '#1c1917',
-                        borderRadius: 4
-                    }]
+                    datasets: [{ data: [13.5, 10, 20], backgroundColor: '#1c1917' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
             });
         }
 
-        function initializeDashboard() {
+        function showApp() {
             document.getElementById('auth-overlay').style.display = 'none';
             document.getElementById('main-interface').style.display = 'block';
             initChart();
         }
 
         window.onload = () => {
-            if (localStorage.getItem("AUTH_VERIFIED") === "true") initializeDashboard();
+            if (localStorage.getItem("AUTH") === "true") showApp();
         };
 
         document.getElementById('passcode-input').addEventListener('keypress', (e) => {
