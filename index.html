@@ -8,183 +8,337 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+        
         body { font-family: 'Inter', sans-serif; background-color: #f5f5f4; color: #1c1917; }
         h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
-        .chart-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; height: 250px; }
-        #main-interface { display: none; }
-        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; height: 300px; }
+        .ai-glow { position: relative; }
+        .ai-glow::after { content: ''; position: absolute; inset: -2px; background: linear-gradient(45deg, #d6d3d1, #a8a29e); z-index: -1; border-radius: inherit; opacity: 0.3; filter: blur(8px); }
+        .tab-active { border-bottom: 2px solid #1c1917; color: #1c1917; font-weight: 700; }
         .loading-shimmer { background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
         @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+        
+        /* Entrance Animation */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Hide main content initially */
+        #main-interface { display: none; }
     </style>
 </head>
-<body class="antialiased min-h-screen">
+<body class="antialiased min-h-screen flex flex-col">
 
     <!-- Passcode Overlay -->
     <div id="auth-overlay" class="fixed inset-0 z-[100] bg-stone-100 flex items-center justify-center p-6">
         <div class="max-w-md w-full text-center space-y-8 fade-in">
             <h1 class="text-4xl serif italic text-stone-900 tracking-tighter">𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘</h1>
             <div class="bg-white p-8 rounded-3xl shadow-xl border border-stone-200">
-                <p class="text-[10px] uppercase tracking-[0.2em] font-bold text-stone-400 mb-6">Encrypted Access Required</p>
-                <input type="password" id="passcode-input" placeholder="••••" 
-                    class="w-full p-4 text-center text-2xl tracking-[0.5em] bg-stone-50 border border-stone-200 rounded-2xl focus:ring-2 focus:ring-stone-900 focus:outline-none mb-4">
+                <p class="text-xs uppercase tracking-widest font-bold text-stone-400 mb-6">Encrypted Access Required</p>
+                <input type="password" id="passcode-input" placeholder="Enter System Passcode" 
+                    class="w-full p-4 text-center text-xl tracking-[0.5em] bg-stone-50 border border-stone-200 rounded-2xl focus:ring-2 focus:ring-stone-900 focus:outline-none mb-4">
                 <button onclick="verifyPasscode()" class="w-full bg-stone-900 text-white py-4 rounded-2xl font-bold hover:bg-stone-800 transition-all shadow-lg">Authenticate</button>
-                <p id="auth-error" class="text-red-500 text-xs mt-4 hidden">Invalid passcode.</p>
+                <p id="auth-error" class="text-red-500 text-xs mt-4 hidden">Invalid passcode. Access denied.</p>
             </div>
+            <p class="text-stone-400 text-[10px] uppercase tracking-widest">Authorized Personnel Only</p>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
+    <!-- Main Dashboard UI -->
     <div id="main-interface">
         <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
-            <div class="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-bold tracking-tight uppercase">𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘</h1>
-                <div class="flex items-center space-x-4">
-                    <button onclick="updateKey()" class="text-[10px] font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900">Update API Key</button>
-                    <button onclick="logout()" class="text-[10px] font-bold uppercase tracking-widest text-red-500 hover:text-red-700">Lock</button>
+            <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+                <h1 class="text-2xl font-bold tracking-tight">𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘 <span class="text-stone-400 font-light text-sm sans-serif ml-2 tracking-widest uppercase">Strategy Dashboard</span></h1>
+                <div class="flex items-center space-x-6">
+                    <nav class="hidden md:flex space-x-6 text-sm font-medium text-stone-500">
+                        <a href="#ai-studio" class="hover:text-stone-900">✨ Studio</a>
+                        <a href="#monetization" class="hover:text-stone-900">💰 Revenue</a>
+                        <a href="#roadmap" class="hover:text-stone-900">Roadmap</a>
+                        <a href="#checklist" class="hover:text-stone-900">Ops</a>
+                    </nav>
+                    <!-- Settings Toggle -->
+                    <div class="relative group">
+                        <button class="p-2 hover:bg-stone-100 rounded-full transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-stone-600"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl shadow-xl hidden group-hover:block py-2 z-[60]">
+                            <button onclick="updateKey()" class="w-full text-left px-4 py-2 text-xs font-bold text-stone-600 hover:bg-stone-50">Change API Key</button>
+                            <button onclick="logout()" class="w-full text-left px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50">Lock System</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-6xl mx-auto px-6 py-10 space-y-12">
-            <!-- AI Suite -->
+        <main class="max-w-6xl mx-auto px-4 py-8 w-full space-y-12">
+            <!-- Introduction Section -->
+            <section class="text-center space-y-4 max-w-3xl mx-auto mb-8">
+                <h2 class="text-4xl md:text-5xl serif text-stone-900 leading-tight">From Visual Curation to <br><i class="text-stone-500">Interactive Authority</i></h2>
+                <p class="text-lg text-stone-600 leading-relaxed">
+                    The 2026 Strategy Manual for monetization. Powered by <strong>Gemini 2.5</strong> to automate the "Interactive Authority" shift.
+                </p>
+            </section>
+
+            <!-- Revenue Milestone Tracker -->
+            <section id="monetization" class="bg-stone-900 rounded-3xl p-8 text-stone-100 shadow-2xl relative overflow-hidden">
+                <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="space-y-2">
+                        <p class="text-stone-400 text-xs uppercase tracking-widest font-bold">12-Month Target</p>
+                        <h2 class="text-5xl serif">$1,000 <span class="text-xl text-stone-500 italic">/ mo</span></h2>
+                        <p class="text-stone-500 text-sm">Target Date: Feb 2027</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="flex justify-between items-end mb-4">
+                            <p class="text-sm font-medium">Revenue Progress (Estimated)</p>
+                            <span id="current-rev-val" class="text-2xl font-bold font-mono">$0</span>
+                        </div>
+                        <div class="w-full bg-stone-800 rounded-full h-4">
+                            <div id="rev-progress-bar" class="bg-stone-400 h-4 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                        </div>
+                        <div class="grid grid-cols-3 mt-4 text-[10px] uppercase tracking-tighter text-stone-500">
+                            <div>Phase 1: $0</div>
+                            <div class="text-center">Phase 2: $300</div>
+                            <div class="text-right">Phase 3: $1000</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- AI Strategy Studio -->
+            <section id="ai-studio" class="scroll-mt-24 space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- AI Content Architect -->
+                    <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm ai-glow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-stone-800">✨ Content Architect</h4>
+                        </div>
+                        <textarea id="ai-prompt" placeholder="Input a theme (e.g., 'The quiet luxury of brutalist architecture')..." class="w-full h-24 p-4 text-sm bg-stone-50 border-none rounded-xl focus:ring-1 focus:ring-stone-400 mb-4"></textarea>
+                        <button onclick="generateThread()" id="btn-generate" class="w-full bg-stone-900 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-all">Generate Strategy Swipe 🧵</button>
+                        <div id="ai-output" class="hidden mt-6 space-y-4 text-sm text-stone-600 border-t border-stone-100 pt-4 animate-fade-in"></div>
+                    </div>
+
+                    <!-- AI Reply Optimizer -->
+                    <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                        <h4 class="font-bold text-stone-800 mb-4 flex items-center gap-2">✨ Reply Optimizer</h4>
+                        <p class="text-xs text-stone-500 mb-4 uppercase tracking-wider font-bold">Maximize the 13.5x Multiplier</p>
+                        <textarea id="ai-reply-context" placeholder="Paste the post you're replying to..." class="w-full h-24 p-3 text-sm border border-stone-200 rounded-lg focus:ring-1 focus:ring-stone-400 focus:outline-none mb-4 bg-stone-50"></textarea>
+                        <button onclick="generateReply()" id="btn-reply" class="w-full border border-stone-900 text-stone-900 py-3 rounded-xl font-bold hover:bg-stone-50 transition-all">Draft High-Value Reply 💬</button>
+                        <div id="ai-reply-output" class="hidden mt-6 p-4 bg-stone-50 rounded-lg border border-stone-200 italic text-sm text-stone-700"></div>
+                    </div>
+
+                    <!-- AI Revenue Simulator -->
+                    <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                        <h4 class="font-bold text-stone-800 mb-4">✨ Revenue Simulator</h4>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-[10px] font-bold text-stone-400 uppercase">Followers</label>
+                                    <input type="number" id="sim-followers" value="1200" class="w-full p-2 bg-stone-50 border border-stone-100 rounded">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-stone-400 uppercase">Product Type</label>
+                                    <select id="sim-product" class="w-full p-2 bg-stone-50 border border-stone-100 rounded">
+                                        <option value="lookbook">Digital Lookbook ($25)</option>
+                                        <option value="subscription">X Subscription ($5/mo)</option>
+                                        <option value="ad-revenue">Ads Rev Share</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button onclick="simulateRevenue()" id="btn-sim" class="w-full border border-stone-900 py-3 rounded-xl font-bold hover:bg-stone-50">Predict Monthly ROI ✨</button>
+                            <div id="sim-output" class="text-xs text-stone-500 italic mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Algorithmic Health & Roadmap -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Content Architect -->
-                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                    <h3 class="font-bold text-stone-800 mb-4 flex items-center gap-2">✨ Content Architect</h3>
-                    <textarea id="ai-prompt" placeholder="Describe the vibe..." class="w-full h-32 p-4 text-sm bg-stone-50 border border-stone-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-stone-300 mb-4"></textarea>
-                    <button onclick="generateAction('architect')" class="w-full bg-stone-900 text-white py-3 rounded-xl text-sm font-bold hover:bg-stone-800 transition-all">Generate Strategy</button>
-                    <div id="out-architect" class="hidden mt-6 p-4 bg-stone-50 rounded-xl text-sm text-stone-600 border border-stone-100 italic whitespace-pre-wrap"></div>
+                <div class="lg:col-span-2 space-y-8">
+                    <section class="bg-white p-6 rounded-2xl border border-stone-200">
+                        <h3 class="text-xl serif mb-4">Algorithm Weight Tracker</h3>
+                        <div class="chart-container">
+                            <canvas id="algoChart"></canvas>
+                        </div>
+                        <div class="bg-stone-800 text-stone-50 p-6 rounded-xl shadow-md mt-6">
+                            <h4 class="font-bold mb-2 text-lg">Verified Impressions</h4>
+                            <p class="text-sm text-stone-300 leading-relaxed">
+                                <strong>CRITICAL:</strong> Only views from Premium users count toward payouts. 
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="roadmap" class="bg-white p-6 rounded-2xl border border-stone-200">
+                        <div class="flex gap-4 mb-6 border-b border-stone-100 pb-2 overflow-x-auto">
+                            <button onclick="setPhase(0)" class="phase-tab tab-active px-4 py-2 text-sm whitespace-nowrap">Phase 1</button>
+                            <button onclick="setPhase(1)" class="phase-tab px-4 py-2 text-sm text-stone-400 whitespace-nowrap">Phase 2</button>
+                            <button onclick="setPhase(2)" class="phase-tab px-4 py-2 text-sm text-stone-400 whitespace-nowrap">Phase 3</button>
+                            <button onclick="setPhase(3)" class="phase-tab px-4 py-2 text-sm text-stone-400 whitespace-nowrap">Phase 4</button>
+                        </div>
+                        <div id="roadmap-content" class="min-h-[160px] animate-fade-in text-sm text-stone-600"></div>
+                    </section>
                 </div>
 
-                <!-- Reply Optimizer -->
-                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                    <h3 class="font-bold text-stone-800 mb-4">✨ Reply Optimizer</h3>
-                    <textarea id="ai-reply" placeholder="Post content to reply to..." class="w-full h-32 p-4 text-sm bg-stone-50 border border-stone-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-stone-300 mb-4"></textarea>
-                    <button onclick="generateAction('reply')" class="w-full border border-stone-900 text-stone-900 py-3 rounded-xl text-sm font-bold hover:bg-stone-50 transition-all">Draft High-Value Reply</button>
-                    <div id="out-reply" class="hidden mt-6 p-4 bg-stone-50 rounded-xl text-sm text-stone-600 border border-stone-100 italic"></div>
-                </div>
-
-                <!-- Revenue Simulator -->
-                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-                    <h3 class="font-bold text-stone-800 mb-4">✨ ROI Simulator</h3>
-                    <div class="space-y-4">
-                        <input type="number" id="sim-followers" value="1000" class="w-full p-3 bg-stone-50 border border-stone-100 rounded-lg text-sm">
-                        <select id="sim-type" class="w-full p-3 bg-stone-50 border border-stone-100 rounded-lg text-sm">
-                            <option value="digital product">Digital Product ($25)</option>
-                            <option value="newsletter">Newsletter ($5/mo)</option>
-                        </select>
-                        <button onclick="generateAction('sim')" class="w-full border border-stone-900 py-3 rounded-xl text-sm font-bold">Predict Revenue</button>
-                        <div id="out-sim" class="hidden mt-4 text-xs text-stone-500 font-mono"></div>
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                        <h3 class="text-xl serif mb-4">Health Monitor</h3>
+                        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 mb-4">
+                            <h4 class="font-bold text-stone-800 mb-3 text-sm">Ratio Calculator</h4>
+                            <div class="space-y-3">
+                                <input type="number" id="followerInput" value="7000" class="w-full p-2 border border-stone-300 rounded text-sm">
+                                <input type="number" id="followingInput" value="2000" class="w-full p-2 border border-stone-300 rounded text-sm">
+                                <div class="pt-3 border-t border-stone-200 flex justify-between items-center">
+                                    <span class="text-stone-600 text-xs font-bold">Current Ratio</span>
+                                    <span id="ratioDisplay" class="text-lg font-bold font-mono">3.5:1</span>
+                                </div>
+                                <div id="ratioStatus" class="mt-2 text-xs font-bold text-green-600 bg-green-50 p-2 rounded text-center">Healthy Authority</div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-stone-900 text-white p-5 rounded-xl ai-glow">
+                            <h4 class="font-bold mb-1 text-sm">✨ AI Strategy Pivot</h4>
+                            <button onclick="getStrategyPivot()" class="w-full text-xs font-bold border border-stone-700 px-4 py-2 rounded hover:bg-stone-800 mt-2">Analyze Status ✨</button>
+                            <div id="pivot-output" class="mt-4 text-xs text-stone-300 italic"></div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Dashboard Analytics -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white p-8 rounded-2xl border border-stone-200">
-                    <h3 class="text-xl serif mb-6">Algorithm Weighting</h3>
-                    <div class="chart-container"><canvas id="algoChart"></canvas></div>
-                </div>
-                <div class="bg-stone-900 text-white p-8 rounded-2xl flex flex-col justify-center text-center">
-                    <p class="text-stone-500 text-[10px] uppercase tracking-[0.3em] font-bold mb-4">Revenue Milestone</p>
-                    <h2 id="rev-val" class="text-7xl serif mb-6">$0</h2>
-                    <div class="w-full bg-stone-800 rounded-full h-3 mb-4 overflow-hidden">
-                        <div id="rev-bar" class="bg-white h-full transition-all duration-1000" style="width: 0%"></div>
+                    <div id="checklist" class="bg-white p-6 rounded-2xl border border-stone-200">
+                        <div class="flex justify-between mb-4">
+                            <h4 class="text-xs font-bold uppercase text-stone-400">Daily Momentum</h4>
+                            <span id="check-percent" class="text-xs font-bold">0%</span>
+                        </div>
+                        <div id="checklist-items" class="space-y-3"></div>
                     </div>
-                    <p class="text-stone-400 text-xs">Progress toward $1,000 Monthly Passive Goal</p>
                 </div>
             </div>
         </main>
     </div>
 
     <script>
-        const SYSTEM_PASSCODE = "2026";
-        // Updated model ID to the most stable production name
-        const MODEL_NAME = "gemini-1.5-flash-latest"; 
+        // --- Security & API Logic ---
+        const SYSTEM_PASSCODE = "2026"; // CHANGE THIS to your preferred passcode
+        const modelName = "gemini-2.5-flash-preview-09-2025";
 
         function verifyPasscode() {
-            const val = document.getElementById('passcode-input').value;
-            if (val === SYSTEM_PASSCODE) {
-                localStorage.setItem("AUTH", "true");
-                showApp();
+            const input = document.getElementById('passcode-input').value;
+            const error = document.getElementById('auth-error');
+            
+            if (input === SYSTEM_PASSCODE) {
+                localStorage.setItem("AUTH_VERIFIED", "true");
+                initializeDashboard();
             } else {
-                document.getElementById('auth-error').classList.remove('hidden');
+                error.classList.remove('hidden');
+                document.getElementById('passcode-input').value = "";
             }
         }
 
         async function getApiKey() {
-            let key = localStorage.getItem("GEMINI_KEY");
+            let key = localStorage.getItem("GEMINI_API_KEY");
             if (!key) {
-                key = window.prompt("Enter your Google Gemini API Key:");
-                if (key) localStorage.setItem("GEMINI_KEY", key);
+                key = window.prompt("Please enter your Gemini API Key (Stored locally in your browser):");
+                if (key) {
+                    localStorage.setItem("GEMINI_API_KEY", key);
+                } else {
+                    alert("No API key provided. AI features will not function.");
+                }
             }
             return key;
         }
 
         function updateKey() {
-            localStorage.removeItem("GEMINI_KEY");
-            getApiKey().then(() => location.reload());
+            const newKey = window.prompt("Enter new Gemini API Key:");
+            if (newKey) {
+                localStorage.setItem("GEMINI_API_KEY", newKey);
+                location.reload();
+            }
         }
 
         function logout() {
-            localStorage.removeItem("AUTH");
+            localStorage.removeItem("AUTH_VERIFIED");
             location.reload();
         }
 
-        async function callGemini(promptText) {
+        function initializeDashboard() {
+            document.getElementById('auth-overlay').style.display = 'none';
+            document.getElementById('main-interface').style.display = 'block';
+            
+            // Start components
+            initChart();
+            setPhase(0);
+            initChecklist();
+            initRatioCalc();
+            updateRevenueBar(0);
+        }
+
+        // --- Core Strategy Logic ---
+        const phases = [
+            { title: "Phase 1: Impression Engine", goal: "Hit 5 Million Rolling Impressions", actions: ["10-15 high-value replies daily.", "Turn on notifications for leaders.", "Volume focus."], metric: "Target: 55k impressions/day" },
+            { title: "Phase 2: Community & Authority", goal: "Reach 10,000+ Followers", actions: ["Launch Newsletter (Substack).", "Post daily in 3 niche Communities.", "Value focus."], metric: "Target: 500 Newsletter Subs" },
+            { title: "Phase 3: Initial Monetization", goal: "$300 - $500 / month", actions: ["Enable Ads Revenue Sharing.", "Launch $4.99/mo Subscriptions.", "Offer 'Behind-the-Scenes'."], metric: "Target: 150 Subscribers" },
+            { title: "Phase 4: $1,000 Milestone", goal: "$1,000+ Profit / month", actions: ["Launch Digital Product (PDF).", "Price at $25-$50.", "Sales content."], metric: "Target: 20 Digital Sales/mo" }
+        ];
+
+        const checklistData = [
+            { id: 1, text: "High-Value Replies (10+)", bonus: "13.5x Multiplier" },
+            { id: 2, text: "Draft Thread Content", bonus: "✨ Studio Ready" },
+            { id: 3, text: "Audit Following List", bonus: "Stay above 1.1:1" }
+        ];
+
+        async function callGemini(prompt, sys) {
             const key = await getApiKey();
-            if (!key) return "Error: Missing API Key.";
-
-            // URL format for v1beta with specific model ID
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${key}`;
-
+            if(!key) return "No API key configured.";
+            
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${key}`;
             try {
                 const response = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [{ text: promptText }]
-                        }]
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } })
                 });
-
                 const data = await response.json();
-
-                if (data.error) {
-                    return `API Error: ${data.error.message}`;
-                }
-
-                return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
-            } catch (err) {
-                return `System Error: ${err.message}`;
-            }
+                return data.candidates?.[0]?.content?.parts?.[0]?.text;
+            } catch (e) { return "System busy or invalid API key."; }
         }
 
-        async function generateAction(type) {
-            const out = document.getElementById(`out-${type}`);
-            out.classList.remove('hidden');
-            out.innerHTML = '<div class="loading-shimmer h-4 w-full rounded"></div>';
-            
-            let prompt = "";
-            if (type === 'architect') prompt = `Act as a luxury brand strategist. Create a 3-part X thread strategy for: ${document.getElementById('ai-prompt').value}`;
-            if (type === 'reply') prompt = `Create a sophisticated, high-authority X reply for: ${document.getElementById('ai-reply').value}`;
-            if (type === 'sim') prompt = `Calculate monthly revenue for ${document.getElementById('sim-followers').value} followers using ${document.getElementById('sim-type').value}. Show calculation.`;
-
-            const res = await callGemini(prompt);
-            out.innerText = res;
-
-            if (type === 'sim') {
-                const match = res.match(/\$(\d+)/);
-                if (match) updateRev(parseInt(match[1]));
-            }
+        // Feature functions (Architect, Reply, Simulator, etc)
+        async function generateThread() {
+            const p = document.getElementById('ai-prompt').value;
+            const out = document.getElementById('ai-output');
+            const btn = document.getElementById('btn-generate');
+            if(!p) return;
+            btn.disabled = true; btn.innerText = "Architecting...";
+            out.classList.remove('hidden'); out.innerHTML = '<div class="h-12 loading-shimmer rounded"></div>';
+            const res = await callGemini(p, "You are a luxury brand strategist. Create a 3-part X thread: 1. Visual Hook, 2. Philosophical Feature, 3. Engagement Question. Minimalist tone.");
+            out.innerHTML = `<div class="p-3 bg-stone-50 rounded italic whitespace-pre-wrap">${res}</div>`;
+            btn.disabled = false; btn.innerText = "Generate Strategy Swipe 🧵";
         }
 
-        function updateRev(val) {
-            document.getElementById('rev-val').innerText = `$${val}`;
-            const pct = Math.min((val / 1000) * 100, 100);
-            document.getElementById('rev-bar').style.width = pct + "%";
+        async function generateReply() {
+            const context = document.getElementById('ai-reply-context').value;
+            const output = document.getElementById('ai-reply-output');
+            const btn = document.getElementById('btn-reply');
+            if (!context) return;
+            btn.disabled = true; btn.innerHTML = "Architecting...";
+            output.classList.remove('hidden'); output.innerHTML = 'Analyzing...';
+            const res = await callGemini(context, "You are rotationONLY. Generate a high-value X reply (15-25 words). Sophisticated and builds context. No hashtags.");
+            output.innerText = res; btn.disabled = false; btn.innerHTML = "Draft High-Value Reply 💬";
+        }
+
+        async function simulateRevenue() {
+            const count = document.getElementById('sim-followers').value;
+            const type = document.getElementById('sim-product').value;
+            const out = document.getElementById('sim-output');
+            const btn = document.getElementById('btn-sim');
+            btn.disabled = true; out.innerText = "Simulating...";
+            const res = await callGemini(`Calculate revenue for ${count} followers on ${type}. 1% conversion.`, "Data analyst role.");
+            out.innerText = res; btn.disabled = false;
+            const match = res.match(/\$(\d+)/);
+            if(match) updateRevenueBar(parseInt(match[1]));
+        }
+
+        // --- Helper UIs ---
+        function updateRevenueBar(val) {
+            const progress = Math.min((val / 1000) * 100, 100);
+            document.getElementById('rev-progress-bar').style.width = progress + "%";
+            document.getElementById('current-rev-val').innerText = "$" + val;
         }
 
         function initChart() {
@@ -192,23 +346,79 @@
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['Reply', 'Bookmark', 'Repost'],
-                    datasets: [{ data: [13.5, 10, 20], backgroundColor: '#1c1917' }]
+                    labels: ['Like', 'Bookmark', 'Long Reply', 'Repost'],
+                    datasets: [{
+                        label: 'Value',
+                        data: [1, 10, 13.5, 20],
+                        backgroundColor: ['#e7e5e4', '#a8a29e', '#78716c', '#1c1917'],
+                        borderRadius: 8
+                    }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { display: false } } } }
             });
         }
 
-        function showApp() {
-            document.getElementById('auth-overlay').style.display = 'none';
-            document.getElementById('main-interface').style.display = 'block';
-            initChart();
+        function setPhase(idx) {
+            const tabs = document.querySelectorAll('.phase-tab');
+            tabs.forEach((t, i) => t.className = i === idx ? 'phase-tab tab-active px-4 py-2 text-sm whitespace-nowrap' : 'phase-tab px-4 py-2 text-sm text-stone-400 whitespace-nowrap');
+            const p = phases[idx];
+            document.getElementById('roadmap-content').innerHTML = `
+                <div class="flex justify-between items-start mb-4">
+                    <h4 class="font-bold text-stone-900">${p.title}</h4>
+                    <span class="bg-stone-900 text-stone-100 text-[10px] px-2 py-1 rounded-full uppercase font-bold">${p.metric}</span>
+                </div>
+                <p class="text-sm text-stone-500 mb-4">${p.goal}</p>
+                <ul class="space-y-2">
+                    ${p.actions.map(a => `<li class="flex items-center gap-2 text-sm text-stone-600"><span class="w-1 h-1 bg-stone-300 rounded-full"></span> ${a}</li>`).join('')}
+                </ul>
+            `;
         }
 
+        function initChecklist() {
+            const container = document.getElementById('checklist-items');
+            checklistData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-3 p-2 hover:bg-stone-50 rounded cursor-pointer group";
+                div.onclick = () => { div.querySelector('.check-box').classList.toggle('bg-stone-800'); updateCheckPercent(); };
+                div.innerHTML = `<div class="check-box w-4 h-4 border border-stone-300 rounded transition-colors"></div>
+                    <div class="flex-grow"><p class="text-xs font-medium text-stone-700">${item.text}</p>
+                    <p class="text-[9px] text-stone-400 uppercase">${item.bonus}</p></div>`;
+                container.appendChild(div);
+            });
+        }
+
+        function updateCheckPercent() {
+            const done = document.querySelectorAll('.check-box.bg-stone-800').length;
+            document.getElementById('check-percent').innerText = Math.round((done/checklistData.length)*100) + "%";
+        }
+
+        function initRatioCalc() {
+            const f = document.getElementById('followerInput');
+            const fing = document.getElementById('followingInput');
+            const calc = () => {
+                const ratio = (f.value / (fing.value || 1)).toFixed(2);
+                document.getElementById('ratioDisplay').innerText = ratio + ":1";
+            };
+            f.addEventListener('input', calc); fing.addEventListener('input', calc); calc();
+        }
+
+        async function getStrategyPivot() {
+            const followers = document.getElementById('followerInput').value;
+            const following = document.getElementById('followingInput').value;
+            const output = document.getElementById('pivot-output');
+            output.innerText = "Analyzing...";
+            const res = await callGemini(`${followers} followers, ${following} following. Pivot?`, "Monetization strategist role.");
+            output.innerText = `✨ ${res}`;
+        }
+
+        // Global Check for Auth on Load
         window.onload = () => {
-            if (localStorage.getItem("AUTH") === "true") showApp();
+            if (localStorage.getItem("AUTH_VERIFIED") === "true") {
+                initializeDashboard();
+            }
         };
 
+        // Enter key for passcode
         document.getElementById('passcode-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') verifyPasscode();
         });
