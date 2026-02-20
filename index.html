@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘 | High-Authority Monetization</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f5f5f4; color: #1c1917; }
+        h1, h2, h3, .serif { font-family: 'Playfair Display', serif; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin: 0 auto; height: 300px; }
+        .ai-glow { position: relative; }
+        .ai-glow::after { content: ''; position: absolute; inset: -2px; background: linear-gradient(45deg, #d6d3d1, #a8a29e); z-index: -1; border-radius: inherit; opacity: 0.3; filter: blur(8px); }
+        .tab-active { border-bottom: 2px solid #1c1917; color: #1c1917; font-weight: 700; }
+        .revenue-gradient { background: linear-gradient(to right, #1c1917, #44403c); }
+        .loading-shimmer { background: linear-gradient(90deg, #f5f5f4 25%, #e7e5e4 50%, #f5f5f4 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-tight">𝔯𝔬𝔱𝔞𝔱𝔦𝔬𝔫𝐎𝐍𝐋𝐘 <span class="text-stone-400 font-light text-sm sans-serif ml-2 tracking-widest uppercase">Strategy Dashboard</span></h1>
+            <div class="hidden md:flex space-x-6 text-sm font-medium text-stone-500">
+                <a href="#ai-studio" class="hover:text-stone-900">✨ Studio</a>
+                <a href="#monetization" class="hover:text-stone-900">💰 Revenue</a>
+                <a href="#roadmap" class="hover:text-stone-900">Roadmap</a>
+                <a href="#checklist" class="hover:text-stone-900">Ops</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-6xl mx-auto px-4 py-8 w-full space-y-12">
+
+        <!-- Revenue Milestone Tracker -->
+        <section id="monetization" class="bg-stone-900 rounded-3xl p-8 text-stone-100 shadow-2xl relative overflow-hidden">
+            <div class="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="space-y-2">
+                    <p class="text-stone-400 text-xs uppercase tracking-widest font-bold">12-Month Target</p>
+                    <h2 class="text-5xl serif">$1,000 <span class="text-xl text-stone-500 italic">/ mo</span></h2>
+                    <p class="text-stone-500 text-sm">Target Date: Feb 2027</p>
+                </div>
+                <div class="md:col-span-2">
+                    <div class="flex justify-between items-end mb-4">
+                        <p class="text-sm font-medium">Revenue Progress (Estimated)</p>
+                        <span id="current-rev-val" class="text-2xl font-bold font-mono">$0</span>
+                    </div>
+                    <div class="w-full bg-stone-800 rounded-full h-4">
+                        <div id="rev-progress-bar" class="bg-stone-400 h-4 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                    </div>
+                    <div class="grid grid-cols-3 mt-4 text-[10px] uppercase tracking-tighter text-stone-500">
+                        <div>Phase 1: $0</div>
+                        <div class="text-center">Phase 2: $300</div>
+                        <div class="text-right">Phase 3: $1000</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Strategy Studio -->
+        <section id="ai-studio" class="scroll-mt-24 space-y-8">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- AI Content Architect -->
+                <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm ai-glow">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-stone-800">✨ Content Architect</h4>
+                        <span class="text-[10px] bg-stone-100 px-2 py-1 rounded text-stone-500 font-bold uppercase">X-Algorithm Optimized</span>
+                    </div>
+                    <textarea id="ai-prompt" placeholder="Input a theme (e.g., 'The quiet luxury of brutalist architecture')..." class="w-full h-24 p-4 text-sm bg-stone-50 border-none rounded-xl focus:ring-1 focus:ring-stone-400 mb-4"></textarea>
+                    <button onclick="generateThread()" id="btn-generate" class="w-full bg-stone-900 text-white py-3 rounded-xl font-bold hover:opacity-90 transition-all">Generate Strategy Swipe 🧵</button>
+                    <div id="ai-output" class="hidden mt-6 space-y-4 text-sm text-stone-600 border-t border-stone-100 pt-4 animate-fade-in"></div>
+                </div>
+
+                <!-- AI Revenue Simulator -->
+                <div class="flex-1 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                    <h4 class="font-bold text-stone-800 mb-4">✨ Revenue Simulator</h4>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[10px] font-bold text-stone-400 uppercase">Followers</label>
+                                <input type="number" id="sim-followers" value="1200" class="w-full p-2 bg-stone-50 border border-stone-100 rounded">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-stone-400 uppercase">Product Type</label>
+                                <select id="sim-product" class="w-full p-2 bg-stone-50 border border-stone-100 rounded">
+                                    <option value="lookbook">Digital Lookbook ($25)</option>
+                                    <option value="subscription">X Subscription ($5/mo)</option>
+                                    <option value="ad-revenue">Ads Rev Share (Impressions)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button onclick="simulateRevenue()" id="btn-sim" class="w-full border border-stone-900 py-3 rounded-xl font-bold hover:bg-stone-50">Predict Monthly ROI ✨</button>
+                        <div id="sim-output" class="text-xs text-stone-500 italic mt-2"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Algorithmic Health & Roadmap -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-8">
+                <section class="bg-white p-6 rounded-2xl border border-stone-200">
+                    <h3 class="text-xl serif mb-4">Algorithm Weight Tracker</h3>
+                    <div class="chart-container">
+                        <canvas id="algoChart"></canvas>
+                    </div>
+                </section>
+
+                <section id="roadmap" class="bg-white p-6 rounded-2xl border border-stone-200">
+                    <div class="flex gap-4 mb-6 border-b border-stone-100 pb-2 overflow-x-auto">
+                        <button onclick="setPhase(0)" class="phase-tab tab-active px-4 py-2 text-sm whitespace-nowrap">Phase 1: Impressions</button>
+                        <button onclick="setPhase(1)" class="phase-tab px-4 py-2 text-sm text-stone-400 whitespace-nowrap">Phase 2: Authority</button>
+                        <button onclick="setPhase(2)" class="phase-tab px-4 py-2 text-sm text-stone-400 whitespace-nowrap">Phase 3: Monetization</button>
+                    </div>
+                    <div id="roadmap-content" class="min-h-[160px] animate-fade-in text-sm text-stone-600"></div>
+                </section>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Ratio Watch -->
+                <div class="bg-white p-6 rounded-2xl border border-stone-200">
+                    <h4 class="text-xs font-bold uppercase text-stone-400 mb-4">Account Health</h4>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-sm font-medium">Follower Ratio</span>
+                        <span id="ratio-val" class="text-xl font-bold">1.1:1</span>
+                    </div>
+                    <input type="range" id="ratio-slider" min="0.5" max="5.0" step="0.1" value="1.1" class="w-full accent-stone-800">
+                    <p id="ratio-advice" class="text-[10px] text-stone-500 mt-2 italic text-center"></p>
+                </div>
+
+                <!-- Daily Ops -->
+                <div id="checklist" class="bg-white p-6 rounded-2xl border border-stone-200">
+                    <div class="flex justify-between mb-4">
+                        <h4 class="text-xs font-bold uppercase text-stone-400">Daily Momentum</h4>
+                        <span id="check-percent" class="text-xs font-bold">0%</span>
+                    </div>
+                    <div id="checklist-items" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const apiKey = ""; 
+        const modelName = "gemini-2.5-flash-preview-09-2025";
+
+        const phases = [
+            { title: "Months 1-4: The Impression Engine", focus: "Reply Volume & Visibility", tasks: ["15 Replies/Day to Big Tech/Design accounts", "Follow/Unfollow to hit 1.1:1 ratio", "Weekly 3-post threads"] },
+            { title: "Months 5-8: Authority Building", focus: "Newsletter Attribution", tasks: ["Convert 5% impressions to Substack", "Host 1 X Space per month", "Engagement questions on every post"] },
+            { title: "Months 9-12: Revenue Optimization", focus: "Conversion & Products", tasks: ["Launch Digital Lookbook", "Turn on X Subscriptions", "Pitch 2 brand collaborations"] }
+        ];
+
+        const checklistData = [
+            { id: 1, text: "High-Value Replies (10+)", bonus: "13.5x Multiplier" },
+            { id: 2, text: "Draft Thread Content", bonus: "✨ Studio Ready" },
+            { id: 3, text: "Audit Following List", bonus: "Stay above 1.1:1" }
+        ];
+
+        async function callGemini(prompt, sys) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: sys }] } })
+                });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text;
+            } catch (e) { return "System busy. Try again."; }
+        }
+
+        async function generateThread() {
+            const p = document.getElementById('ai-prompt').value;
+            const out = document.getElementById('ai-output');
+            const btn = document.getElementById('btn-generate');
+            if(!p) return;
+            
+            btn.disabled = true;
+            btn.innerText = "Architecting...";
+            out.classList.remove('hidden');
+            out.innerHTML = '<div class="h-12 loading-shimmer rounded"></div>';
+
+            const res = await callGemini(p, "You are a luxury brand strategist. Create a 3-part X thread: 1. Visual Hook (1/3), 2. Philosophical Feature (2/3), 3. Engagement Question (3/3). Minimalist, cold, high-status tone.");
+            out.innerHTML = `<div class="p-3 bg-stone-50 rounded italic whitespace-pre-wrap">${res}</div>`;
+            btn.disabled = false;
+            btn.innerText = "Generate Strategy Swipe 🧵";
+        }
+
+        async function simulateRevenue() {
+            const count = document.getElementById('sim-followers').value;
+            const type = document.getElementById('sim-product').value;
+            const out = document.getElementById('sim-output');
+            const btn = document.getElementById('btn-sim');
+
+            btn.disabled = true;
+            out.innerText = "Simulating conversions...";
+
+            const prompt = `Calculate estimated monthly revenue for ${count} followers on X for a ${type}. Factor in 1% conversion rate for products and standard X payout rates for impressions. Provide a 2-sentence summary.`;
+            const res = await callGemini(prompt, "You are a data analyst for creator monetization.");
+            
+            out.innerText = res;
+            btn.disabled = false;
+            
+            // Extract a number if possible to update the bar
+            const match = res.match(/\$(\d+)/);
+            if(match) {
+                const val = parseInt(match[1]);
+                updateRevenueBar(val);
+            }
+        }
+
+        function updateRevenueBar(val) {
+            const progress = Math.min((val / 1000) * 100, 100);
+            document.getElementById('rev-progress-bar').style.width = progress + "%";
+            document.getElementById('current-rev-val').innerText = "$" + val;
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('algoChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Like', 'Bookmark', 'Long Reply', 'Repost'],
+                    datasets: [{
+                        label: 'Value',
+                        data: [1, 10, 13.5, 20],
+                        backgroundColor: ['#e7e5e4', '#a8a29e', '#78716c', '#1c1917'],
+                        borderRadius: 8
+                    }]
+                },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: { x: { display: false }, y: { grid: { display: false } } }
+                }
+            });
+        }
+
+        function setPhase(idx) {
+            const tabs = document.querySelectorAll('.phase-tab');
+            tabs.forEach((t, i) => t.className = i === idx ? 'phase-tab tab-active px-4 py-2 text-sm whitespace-nowrap' : 'phase-tab px-4 py-2 text-sm text-stone-400 whitespace-nowrap');
+            
+            const p = phases[idx];
+            document.getElementById('roadmap-content').innerHTML = `
+                <p class="font-bold text-stone-900 mb-2">${p.title}</p>
+                <p class="text-xs text-stone-400 uppercase mb-4 tracking-widest">Focus: ${p.focus}</p>
+                <ul class="space-y-2">
+                    ${p.tasks.map(t => `<li class="flex items-center gap-2"><span class="w-1 h-1 bg-stone-300 rounded-full"></span> ${t}</li>`).join('')}
+                </ul>
+            `;
+        }
+
+        function initChecklist() {
+            const container = document.getElementById('checklist-items');
+            container.innerHTML = '';
+            checklistData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-3 p-2 hover:bg-stone-50 rounded cursor-pointer group";
+                div.onclick = () => {
+                    div.querySelector('.check-box').classList.toggle('bg-stone-800');
+                    updateCheckPercent();
+                };
+                div.innerHTML = `
+                    <div class="check-box w-4 h-4 border border-stone-300 rounded transition-colors"></div>
+                    <div class="flex-grow">
+                        <p class="text-xs font-medium text-stone-700">${item.text}</p>
+                        <p class="text-[9px] text-stone-400 uppercase">${item.bonus}</p>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function updateCheckPercent() {
+            const total = checklistData.length;
+            const done = document.querySelectorAll('.check-box.bg-stone-800').length;
+            document.getElementById('check-percent').innerText = Math.round((done/total)*100) + "%";
+        }
+
+        document.getElementById('ratio-slider').oninput = function() {
+            const val = this.value;
+            document.getElementById('ratio-val').innerText = val + ":1";
+            const advice = document.getElementById('ratio-advice');
+            if(val < 1.1) advice.innerText = "🚨 High risk of shadowban. Unfollow non-engagers.";
+            else if(val < 2) advice.innerText = "✅ Healthy growth. Keep engaging.";
+            else advice.innerText = "💎 Elite Authority status reached.";
+        };
+
+        window.onload = () => {
+            initChart();
+            setPhase(0);
+            initChecklist();
+            updateRevenueBar(0);
+        };
+    </script>
+</body>
+</html>
